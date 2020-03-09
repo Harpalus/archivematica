@@ -590,10 +590,20 @@ def update_metadata_csv(job, mets, metadata_csv, sip_uuid, sip_dir, state):
         for new_dmdsec in new_dmdsecs:
             # need to strip new_d to just the DC part
             new_dc = new_dmdsec.find(".//dcterms:dublincore", namespaces=ns.NSMAP)
-            new_metsrw_dmdsec = fsentry.add_dublin_core(new_dc)
-            if len(fsentry.dmdsecs) > 1:
-                fsentry.dmdsecs[-2].replace_with(new_metsrw_dmdsec)
-
+            if new_dc is not None:
+                new_metsrw_dmdsec = fsentry.add_dublin_core(new_dc)
+                if len(fsentry.dmdsecs) > 1:
+                    # TODO: Is this replace_with logic correct or still relevant?
+                    # The -2 seems a bit arbitrary, and it should probably
+                    # look for a @MDTYPE="DC" at least.
+                    fsentry.dmdsecs[-2].replace_with(new_metsrw_dmdsec)
+            else:
+                new_non_dc = new_dmdsec.find(
+                    './/mets:mdWrap[@MDTYPE="OTHER"][@OTHERMDTYPE="CUSTOM"]/mets:xmlData',
+                    namespaces=ns.NSMAP,
+                )
+                if new_non_dc is not None:
+                    fsentry.add_dmdsec(new_non_dc, "OTHER", othermdtype="CUSTOM")
         job.pyprint(f, "now associated with", fsentry.dmdids)
 
     return mets
