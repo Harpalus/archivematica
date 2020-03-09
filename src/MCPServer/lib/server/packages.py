@@ -784,7 +784,7 @@ class Transfer(Package):
                 uuid=transfer_uuid, defaults={"currentlocation": path}
             )
             if not created and transfer_obj.currentlocation != path:
-                transfer_obj.currentpath = path
+                transfer_obj.currentlocation = path
                 transfer_obj.save()
         else:
             try:
